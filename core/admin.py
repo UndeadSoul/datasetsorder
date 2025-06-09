@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import rawdatacity,correctedcity
+from .models import rawdatacity,ciudades_norm
 
 admin.site.register(rawdatacity)
-admin.site.register(correctedcity)
+admin.site.register(ciudades_norm)

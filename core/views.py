@@ -1,7 +1,7 @@
 import unicodedata
 from django.shortcuts import redirect, render
 from .forms import TextFileForm
-from .models import rawdatacity,correctedcity
+from .models import rawdatacity,ciudades_norm
 import re
 
 # Create your views here.
@@ -15,7 +15,7 @@ def upload_file(request):
                 if form.is_valid():
                         #Antes de cargar el archivo con las ciudades, vamos a borrar los datos ya existentes
                         rawdatacity.objects.all().delete()
-                        correctedcity.objects.all().delete()
+                        ciudades_norm.objects.all().delete()
                         #Se procesa el archivo y se guarda linea por linea
                         file = form.cleaned_data['file']
                         for line in file:
@@ -32,7 +32,7 @@ def success(request):
 def clean_data(request):
         #obtener datos y ordenarlos
         rawdata=rawdatacity.objects.all()
-        correctedcity.objects.all().delete()
+        ciudades_norm.objects.all().delete()
         #Aplicar limpieza
         cities = set()
         for city in range(len(rawdata)):
@@ -57,9 +57,9 @@ def clean_data(request):
                 if text not in cities:
                         cities.add(text)
                         #guardar en base de datos
-                        correctedcity.objects.create(correctedcity_name=text)
+                        ciudades_norm.objects.create(correctedcity_name=text)
         #obtener los objetos de los datos limpios en la bdd
-        clean_data=correctedcity.objects.all()
+        clean_data=ciudades_norm.objects.all()
         return render(request, 'core/clean_data.html', {'clean_data':clean_data, 'rawdata':rawdata})
 
 
