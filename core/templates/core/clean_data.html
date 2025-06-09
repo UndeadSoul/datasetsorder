@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+
+{% block title %}- Datos limpios{% endblock title %}
+
+{% block content %}
+<h1>Datos limpios</h1>
+<a  href={% url 'home' %}>Volver a inicio</a>
+<h2>Clean Data</h2>
+<table>
+    <tbody>
+    {% for data in clean_data %}
+        <tr>
+            <td>{{data.correctedcity_name}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% comment "" %}
+<h2>Raw Data</h2>
+<table>
+    <tbody>
+    {% for data in rawdata %}
+        <tr>
+            <td>{{data.rawcity_name}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endcomment %}
+<br>
+{% endblock content %}

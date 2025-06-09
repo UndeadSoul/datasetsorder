@@ -1,0 +1,8 @@
+{% extends "core/base.html" %}
+
+{% block title %}- Home{% endblock title %}
+
+{% block content %}
+<h1>Este es el home</h1>
+<a  href={% url 'upload_file' %}>subir archivo</a>
+{% endblock content %}

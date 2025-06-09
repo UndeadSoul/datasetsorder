@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+
+{% block title %}- Éxito{% endblock title %}
+
+{% block content %}
+<h1>El archivo ha sido cargado con éxito</h1>
+<a  href={% url 'clean_data' %}>Limpiar datos</a>
+<h2>Raw Data</h2>
+<table>
+    <tbody>
+    {% for data in rawdata %}
+        <tr>
+            <td>{{data.rawcity_name}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}
