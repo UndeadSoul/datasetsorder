@@ -3,29 +3,51 @@
 {% block title %}- Datos limpios{% endblock title %}
 
 {% block content %}
-<h1>Datos limpios</h1>
-<a  href={% url 'home' %}>Volver a inicio</a>
-<h2>Clean Data</h2>
-<table>
-    <tbody>
-    {% for data in clean_data %}
-        <tr>
-            <td>{{data.correctedcity_name}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% comment "" %}
-<h2>Raw Data</h2>
-<table>
-    <tbody>
-    {% for data in rawdata %}
-        <tr>
-            <td>{{data.rawcity_name}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% endcomment %}
-<br>
+  <!-- Contenedor para el mensaje de éxito (que ahora será "Limpiar datos") -->
+  <div class="bg-gray-200 p-4 rounded-lg mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 text-center">¡Los datos han sido limpiados!</h1>
+  </div>
+
+  <!-- Link alineado a la derecha (link de volver a inicio) -->
+  <div class="w-full flex justify-end mb-6">
+    <a href="{% url 'home' %}" class="text-gray-700 font-medium hover:underline drop-shadow">
+      Volver a inicio
+    </a>
+  </div>
+
+
+
+  <!-- Barra de búsqueda -->
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Buscar ciudad en Clean Data..."
+    class="mb-4 p-2 rounded border border-gray-300 w-full max-w-md mx-auto block focus:outline-none focus:ring focus:border-gray-500"
+  />
+
+  <!-- Contenedor de los datos, usando el estilo de "success" -->
+  <div class="bg-gray-100 p-4 rounded-xl shadow-inner text-left max-h-80 overflow-y-auto mx-auto max-w-md">
+    <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Clean Data</h2>
+    <ul id="dataList" class="classic-font text-gray-700 text-base list-disc list-inside">
+      {% for data in clean_data %}
+        <li class="data-item">{{forloop.counter}}. {{ data.correctedcity_name }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const dataList = document.getElementById('dataList');
+    const dataItems = dataList.querySelectorAll('.data-item');
+
+    searchInput.addEventListener('input', function() {
+      const filter = searchInput.value.toLowerCase();
+
+      dataItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? '' : 'none';
+      });
+    });
+  </script>
+
 {% endblock content %}

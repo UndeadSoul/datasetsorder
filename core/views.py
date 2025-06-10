@@ -37,10 +37,10 @@ def clean_data(request):
         cities = set()
         for city in range(len(rawdata)):
                 #quitar los numeros del inicio
-                text=rawdata[city].rawcity_name
-                pos=text.find(". ")
+                text=rawdata[city].rawcity_name #obtener cada uno de las ciudades
+                pos=text.find(". ")             #encontrar los caracteres que van despues de los numeros
                 if pos != -1:
-                        text=text[pos+2:]
+                        text=text[pos+2:]       #hacer un slice sin los caracteres ("<numero>. ")
                 else:
                         text=text
                 #quitar los tildes
@@ -59,7 +59,7 @@ def clean_data(request):
                         #guardar en base de datos
                         ciudades_norm.objects.create(correctedcity_name=text)
         #obtener los objetos de los datos limpios en la bdd
-        clean_data=ciudades_norm.objects.all()
+        clean_data=ciudades_norm.objects.all().order_by('correctedcity_name')
         return render(request, 'core/clean_data.html', {'clean_data':clean_data, 'rawdata':rawdata})
 
 

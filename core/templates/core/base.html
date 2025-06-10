@@ -1,11 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dataset {% block title %}{% endblock title %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('https://marketplace.canva.com/EAE9oAp-Byc/1/0/1600w/canva-fondo-de-pantalla-escritorio-pc-abstracto-moderno-degradado-negro-PriNvkfDEzU.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+    </style>
 </head>
-<body>
-    {% block content %}{% endblock content %}
+<body class="min-h-screen flex flex-col">
+
+    <!-- Barra de navegación -->
+<nav class="bg-white bg-opacity-90 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="w-24 text-center text-xl font-semibold text-blue-600 hover:text-blue-800">
+                    HOME
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Contenido principal -->
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="bg-white bg-opacity-90 p-8 rounded-2xl shadow-xl w-full max-w-2xl">
+            {% block content %}{% endblock content %}
+        </div>
+    </main>
+
 </body>
 </html>
