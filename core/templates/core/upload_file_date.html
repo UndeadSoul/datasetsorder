@@ -1,0 +1,45 @@
+{% extends "core/base.html" %}
+
+{% block title %}- Subir archivo{% endblock title %}
+
+{% block content %}
+
+<form method="post" enctype="multipart/form-data" class="space-y-6 text-center bg-gray-100 bg-opacity-90 p-8 rounded-2xl shadow-lg max-w-md mx-auto">
+    {% csrf_token %}
+
+    <h1 class="text-3xl font-serif  font-semibold mb-8 text-gray-800">
+        Sube tu archivo de fechas
+    </h1>
+
+    <div class="space-y-3">
+        <label class="block font-medium text-gray-700 " for="id_file">Suba un archivo .txt:</label>
+
+        <!-- Botón grande, a lo ancho -->
+        <label for="id_file" 
+            class="block w-full bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg cursor-pointer hover:bg-gray-800 transition">
+            Seleccionar archivo
+        </label>
+
+        <!-- Input oculto -->
+        <input id="id_file" name="file" type="file" class="hidden" />
+
+        <!-- Nombre del archivo abajo -->
+        <span id="file-name" class="text-sm block text-gray-600 ">Ningún archivo seleccionado</span>
+    </div>
+
+    <button type="submit" 
+        class="w-full bg-gray-700 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition">
+        Subir Archivo
+    </button>
+</form>
+
+<script>
+    const input = document.getElementById('id_file');
+    const fileNameSpan = document.getElementById('file-name');
+
+    input.addEventListener('change', function () {
+        fileNameSpan.textContent = input.files.length > 0 ? input.files[0].name : 'Ningún archivo seleccionado';
+    });
+</script>
+
+{% endblock content %}

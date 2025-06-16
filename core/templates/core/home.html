@@ -6,10 +6,23 @@
 
 <div class="bg-gray-100 bg-opacity-90 p-10 rounded-2xl shadow-lg text-center w-full max-w-md mx-auto">
     <h1 class="text-3xl font-serif font-semibold text-gray-800 mb-6">Limpieza de Datos</h1>
+    {% comment "Subir archivo de primera evaluacion" %}
+    <a href="{% url 'upload_file' %}" 
+        class="inline-block bg-gray-700 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-800 transition">
+        Subir archivo
+    </a>
+    {% endcomment %}
+    {% comment "upload date file" %}{% endcomment %}
+    <a href="{% url 'upload_file_date' %}" 
+       class="inline-block bg-gray-700 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-800 transition">
+       Subir archivo Fechas
+    </a>
+    {% comment "upload address file" %}
     <a href="{% url 'upload_file' %}" 
        class="inline-block bg-gray-700 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-800 transition">
-       Subir archivo
+       Subir archivo Direcciones
     </a>
+    {% endcomment %}
 </div>
 
 {% endblock content %}

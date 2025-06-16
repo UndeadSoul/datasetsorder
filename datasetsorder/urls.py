@@ -25,9 +25,15 @@ from core import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.home, name='home'),
+    
     path('upload/',views.upload_file, name='upload_file'),
     path('success/',views.success, name='success'),
     path('clean_data/',views.clean_data, name='clean_data'),
+
+    path('upload_file_date/',views.upload_file_date, name='upload_file_date'),
+    path('success_date/',views.success_date, name='success_date'),
+    path('clean_data_date/',views.clean_data_date, name='clean_data_date'),
+    
 ]
 
 if settings.DEBUG:
