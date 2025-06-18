@@ -1,0 +1,75 @@
+{% extends "core/base.html" %}
+
+{% block title %}- Lugares cargados{% endblock title %}
+
+{% block content %}
+
+<!-- Contenedor para el mensaje de éxito -->
+<div class="bg-gray-200 p-4 rounded-lg mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 text-center">El archivo de lugares ha sido procesado</h1>
+</div>
+
+<!-- Botón para limpiar direcciones -->
+<div class="text-center mb-6">
+    <a href="{% url 'clean_data_address' %}"
+       class="inline-block bg-gray-700 text-white py-2 px-6 rounded-lg hover:bg-gray-800 transition">
+       Ir a limpiar direcciones
+    </a>
+</div>
+
+<!-- Barra de búsqueda -->
+<input
+    id="searchInput"
+    type="text"
+    placeholder="Buscar lugar..."
+    class="mb-4 p-2 rounded border border-gray-300 w-full max-w-md mx-auto block focus:outline-none focus:ring focus:border-gray-500"
+/>
+
+<!-- Contenedor con scroll -->
+<div id="dataContainer" class="bg-gray-100 p-4 rounded-xl shadow-inner text-left max-h-80 overflow-y-auto mx-auto max-w-md">
+    <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Lugares únicos registrados</h2>
+    <ul id="dataList" class="classic-font text-gray-700 text-base list-disc list-inside">
+        {% for place in places_data %}
+        <li class="data-item">
+            <strong>{{ place.name }}</strong> - 
+            Dirección: 
+            {% if place.address %}
+                {{ place.address.street_name }} {{ place.address.street_number }}, {{ place.address.city_state_province }}, {{ place.address.country }}
+            {% else %}
+                Sin dirección
+            {% endif %}
+             - Geolocalización: 
+            {% if place.georef %}
+                ({{ place.georef.latitude }}, {{ place.georef.longitude }})
+            {% else %}
+                Sin geolocalización
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Botón de volver al inicio -->
+<div class="text-center mt-8">
+    <a href="{% url 'home' %}" 
+       class="inline-block bg-gray-700 text-white py-2 px-6 rounded-lg hover:bg-gray-800 transition">
+       Volver al inicio
+    </a>
+</div>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const dataList = document.getElementById('dataList');
+  const dataItems = dataList.querySelectorAll('.data-item');
+
+  searchInput.addEventListener('input', function () {
+    const filter = searchInput.value.toLowerCase();
+
+    dataItems.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(filter) ? '' : 'none';
+    });
+  });
+</script>
+
+{% endblock content %}

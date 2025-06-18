@@ -2,7 +2,7 @@ import unicodedata
 from django.shortcuts import redirect, render
 from datetime import datetime
 from .forms import TextFileForm
-from .models import rawdatacity,ciudades_norm,fnac_famosos,fnac_famosos_norm
+from .models import rawdatacity,ciudades_norm,fnac_famosos,fnac_famosos_norm,Place, Address, Georeference
 import re
 
 # Create your views here.
@@ -10,7 +10,7 @@ import re
 def home(request):
         return render(request, 'core/home.html')
 
-########################################################### 
+"""Ciudades""" 
 def upload_file(request):
         if request.method == 'POST':
                 form = TextFileForm(request.POST, request.FILES)
@@ -65,7 +65,7 @@ def clean_data(request):
         return render(request, 'core/clean_data.html', {'clean_data':clean_data, 'rawdata':rawdata})
 ###########################################################
 
-###########################################################
+"""Fecha"""
 def upload_file_date(request):
         if request.method == 'POST':
                 form = TextFileForm(request.POST, request.FILES)
@@ -125,14 +125,124 @@ def clean_data_date(request):
                                         amount_of_years=this_year-year
                                         if (today.month, today.day) < (int(month), int(day)):
                                                 amount_of_years -= 1
-                                        fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=str_year,fnac_age=amount_of_years,fnac_birthday="")
+                                        fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=str_year,fnac_age=amount_of_years)
                         else:
                                 #guardar en base de datos
-                                fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=substring_date,fnac_age="",fnac_birthday="")
+                                fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=substring_date,fnac_age="")
         #obtener los objetos de los datos limpios en la bdd
         clean_data=fnac_famosos_norm.objects.all().order_by('fnac_name')
         return render(request, 'core/clean_data_date.html', {'clean_data':clean_data, 'rawdata':rawdata})
 ###########################################################
+
+"""Direccion"""
+def upload_file_places(request):
+    if request.method == 'POST':
+        form = TextFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Limpiar todo antes de importar
+            Place.objects.all().delete()
+            Address.objects.all().delete()
+            Georeference.objects.all().delete()
+
+            file = form.cleaned_data['file']
+
+            seen_places = set()
+            seen_addresses = set()
+
+            places_to_create = []
+            addresses_to_create = []
+            georefs_to_create = []
+
+            for line in file:
+                try:
+                    line_str = line.decode('utf-8').strip()
+                except UnicodeDecodeError:
+                    line_str = line.decode('latin-1').strip()
+
+                parts = line_str.split(';')
+                if len(parts) != 3:
+                    continue
+
+                name = parts[0].strip()
+                address_str = parts[1].strip()
+                geo_str = parts[2].strip()
+
+                # Skip duplicate places
+                if name in seen_places:
+                    continue
+                seen_places.add(name)
+
+                # Parse address
+                addr_parts = [x.strip() for x in address_str.split(',')]
+                street_name = addr_parts[0] if len(addr_parts) > 0 else ''
+                street_number = addr_parts[1] if len(addr_parts) > 1 else ''
+                city_state = addr_parts[2] if len(addr_parts) > 2 else ''
+                country = addr_parts[3] if len(addr_parts) > 3 else ''
+
+                address_key = (street_name.lower(), street_number.lower(), city_state.lower(), country.lower())
+                if address_key in seen_addresses:
+                    continue
+                seen_addresses.add(address_key)
+
+                # Crear instancia del lugar (no guardada aún)
+                place = Place(name=name)
+                places_to_create.append(place)
+
+                # Guardamos datos para usar después (con el índice correspondiente)
+                addresses_to_create.append((place, street_name, street_number, city_state, country))
+                try:
+                    lat, lon = map(float, geo_str.split(','))
+                except Exception:
+                    lat, lon = 0.0, 0.0
+                georefs_to_create.append((place, lat, lon))
+
+            # Guardar Places
+            Place.objects.bulk_create(places_to_create)
+
+            # Ahora que los places están guardados, agregamos Address y Georeference
+            Address.objects.bulk_create([
+                Address(
+                    place=place,
+                    street_name=street_name,
+                    street_number=street_number,
+                    city_state_province=city_state,
+                    country=country
+                )
+                for place, street_name, street_number, city_state, country in addresses_to_create
+            ])
+
+            Georeference.objects.bulk_create([
+                Georeference(place=place, latitude=lat, longitude=lon)
+                for place, lat, lon in georefs_to_create
+            ])
+
+            return redirect('success_places')
+    else:
+        form = TextFileForm()
+
+    return render(request, 'core/upload_file_places.html', {'form': form})
+
+
+def success_places(request):
+    places = Place.objects.prefetch_related('address', 'georeference').all()
+    places_data = []
+
+    for place in places:
+        address = getattr(place, 'address', None)
+        georef = getattr(place, 'georeference', None)
+        places_data.append({
+            'name': place.name,
+            'address': address,
+            'georef': georef,
+        })
+
+    return render(request, 'core/success_places.html', {'places_data': places_data})
+
+
+def clean_data_address(request):
+    # Direcciones únicas ordenadas por nombre y número de calle
+    addresses = Address.objects.order_by('street_name', 'street_number')
+    return render(request, 'core/clean_data_address.html', {'addresses': addresses})
 
 
 ###########################################################

@@ -34,6 +34,9 @@ urlpatterns = [
     path('success_date/',views.success_date, name='success_date'),
     path('clean_data_date/',views.clean_data_date, name='clean_data_date'),
     
+    path('upload_file_places/', views.upload_file_places, name='upload_file_places'),
+    path('success_places/', views.success_places, name='success_places'),
+    path('clean_data_address/', views.clean_data_address, name='clean_data_address'),
 ]
 
 if settings.DEBUG:

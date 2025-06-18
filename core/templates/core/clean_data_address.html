@@ -1,10 +1,10 @@
 {% extends "core/base.html" %}
 
-{% block title %}- Fechas limpiadas{% endblock title %}
+{% block title %}- Direcciones limpiadas{% endblock title %}
 
 {% block content %}
   <div class="bg-gray-200 p-4 rounded-lg mb-6">
-    <h1 class="text-2xl font-bold text-gray-800 text-center">¡Fechas limpiadas y normalizadas!</h1>
+    <h1 class="text-2xl font-bold text-gray-800 text-center">¡Las direcciones han sido limpiadas!</h1>
   </div>
 
   <div class="w-full flex justify-end mb-6">
@@ -17,20 +17,22 @@
   <input
     id="searchInput"
     type="text"
-    placeholder="Buscar por nombre..."
+    placeholder="Buscar dirección..."
     class="mb-4 p-2 rounded border border-gray-300 w-full max-w-md mx-auto block focus:outline-none focus:ring focus:border-gray-500"
   />
 
   <!-- Contenedor de resultados -->
   <div class="bg-gray-100 p-6 rounded-xl shadow-inner text-left max-h-[450px] overflow-y-auto mx-auto max-w-4xl">
-    <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Fechas Normalizadas</h2>
+    <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Direcciones Normalizadas</h2>
 
     <ul id="dataList" class="classic-font text-gray-700 text-base list-decimal list-inside space-y-2">
-      {% for data in clean_data %}
+      {% for data in addresses %}
         <li class="data-item">
-          <strong>Nombre:</strong> {{ data.fnac_name }}<br>
-          <strong>Fecha de nacimiento:</strong> {{ data.fnac_date }}<br>
-          <strong>Edad:</strong> {{ data.fnac_age }}{% if data.fnac_age %} años{% endif %} {% if data.fnac_birthday %}🎊{% endif %}<br>
+          <strong>ID:</strong> {{ data.id }}<br>
+          <strong>Nombre calle:</strong> {{ data.street_name }}<br>
+          <strong>Número:</strong> {{ data.street_number }}<br>
+          <strong>Ciudad/Estado/Provincia:</strong> {{ data.city_state_province }}<br>
+          <strong>País:</strong> {{ data.country }}
         </li>
       {% endfor %}
     </ul>
@@ -41,7 +43,7 @@
     const searchInput = document.getElementById('searchInput');
     const dataItems = document.querySelectorAll('.data-item');
 
-    searchInput.addEventListener('input', function () {
+    searchInput.addEventListener('input', function() {
       const filter = this.value.toLowerCase();
       dataItems.forEach(item => {
         const text = item.textContent.toLowerCase();
