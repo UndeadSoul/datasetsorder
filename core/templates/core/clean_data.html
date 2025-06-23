@@ -10,8 +10,11 @@
 
   <!-- Link alineado a la derecha (link de volver a inicio) -->
   <div class="w-full flex justify-end mb-6">
-    <a href="{% url 'home' %}" class="text-gray-700 font-medium hover:underline drop-shadow">
+    <a href="{% url 'home' %}" class="text-gray-700 font-medium hover:underline drop-shadow pl-2">
       Volver a inicio
+    </a>
+    <a href="{% url 'download_records' %}?data_type=cities" class="text-gray-700 font-medium hover:underline drop-shadow pl-2">
+      Descargar datos 
     </a>
   </div>
 

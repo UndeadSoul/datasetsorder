@@ -1,9 +1,11 @@
 import unicodedata
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from datetime import datetime
 from .forms import TextFileForm
 from .models import rawdatacity,ciudades_norm,fnac_famosos,fnac_famosos_norm,Place, Address, Georeference
 import re
+import csv
 
 # Create your views here.
 
@@ -63,6 +65,13 @@ def clean_data(request):
         #obtener los objetos de los datos limpios en la bdd
         clean_data=ciudades_norm.objects.all().order_by('correctedcity_name')
         return render(request, 'core/clean_data.html', {'clean_data':clean_data, 'rawdata':rawdata})
+
+def clean_accent(texto):
+    texto_normalizado = unicodedata.normalize('NFD', texto)
+    texto_sin_acentos = ''.join(
+        c for c in texto_normalizado if unicodedata.category(c) != 'Mn'
+    )
+    return texto_sin_acentos
 ###########################################################
 
 """Fecha"""
@@ -92,6 +101,7 @@ def clean_data_date(request):
         fnac_famosos_norm.objects.all().delete()
         #Aplicar limpieza
         names = set()
+        dataflag=False
         for line in range(len(rawdata)):
                 #quitar los numeros del inicio
                 data=rawdata[line].raw_fnac
@@ -100,6 +110,7 @@ def clean_data_date(request):
                 substring_name=data[pos1+2:pos2]
                 substring_date=data[pos2+3:]
                 #comparar con otros para saber si se repite
+                
                 if substring_name not in names:
                         names.add(substring_name)
                         #limpiar y formatear fecha
@@ -126,12 +137,14 @@ def clean_data_date(request):
                                         if (today.month, today.day) < (int(month), int(day)):
                                                 amount_of_years -= 1
                                         fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=str_year,fnac_age=amount_of_years)
+                                
                         else:
-                                #guardar en base de datos
-                                fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=substring_date,fnac_age="")
+                                #no guardar en base de datos
+                                dataflag=True
+                        
         #obtener los objetos de los datos limpios en la bdd
         clean_data=fnac_famosos_norm.objects.all().order_by('fnac_name')
-        return render(request, 'core/clean_data_date.html', {'clean_data':clean_data, 'rawdata':rawdata})
+        return render(request, 'core/clean_data_date.html', {'clean_data':clean_data, 'rawdata':rawdata, 'dataflag':dataflag})
 ###########################################################
 
 """Direccion"""
@@ -246,9 +259,61 @@ def clean_data_address(request):
 
 
 ###########################################################
-def clean_accent(texto):
-    texto_normalizado = unicodedata.normalize('NFD', texto)
-    texto_sin_acentos = ''.join(
-        c for c in texto_normalizado if unicodedata.category(c) != 'Mn'
-    )
-    return texto_sin_acentos
+
+"""Descargar registros"""
+def export_csv(request):
+        data_type = request.GET.get("data_type")
+        models={
+                'cities':{
+                        'model':ciudades_norm,
+                        'fields':['correctedcity_name'],
+                        'headers':['Nombre ciudad']
+                },
+                'dates':{
+                        'model':fnac_famosos_norm,
+                        'fields':['fnac_name','fnac_date','fnac_age','fnac_birthday'],
+                        'headers':['Nombre','Fecha','Edad','Cumpleaños']
+                },
+                'addresses':{
+                        'model':[],
+                        'fields':[],
+                        'headers':['Nombre', 'Calle','Numero','C.S.P.','Pais','Latitud','Longitud']
+                }
+        }
+        if data_type not in models:
+                return HttpResponse("Tabla no válida", status=400)
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition']= f'attachment; filename="{data_type}".csv'
+        response.write(u'\ufeff'.encode('utf8'))
+        writer=csv.writer(response)
+        
+        if data_type != "addresses":
+                config = models[data_type]
+                model = config['model']
+                fields= config['fields']
+                headers = config['headers']
+
+                writer.writerow(headers)
+
+                for obj in model.objects.all():
+                        row = [getattr(obj,field) for field in fields]
+                        writer.writerow(row)
+        else:
+                #caso en el que se necesitan las 3 tablas de direccion
+                data1= list(Place.objects.all())
+                data2= list(Address.objects.all())
+                data3= list(Georeference.objects.all())
+                writer.writerow([['Nombre', 'Calle','Numero','C.S.P.','País','Latitud','Longitud']])
+                for i in range(len(data1)):
+                        row = [
+                              data1[i].name,
+                              data2[i].street_name,
+                              data2[i].street_number,
+                              data2[i].city_state_province,
+                              data2[i].country,
+                              data3[i].latitude,
+                              data3[i].longitude,
+                        ]
+                        writer.writerow(row)
+        return response

@@ -1,0 +1,8 @@
+
+'model1':'Place','Address','Georeference',
+'model2':
+'model3':
+'fields1':['name'],
+'fields2':['street_name','street_number','city_state_province','country'],
+'fields3':['latitude','longitude'],
+'headers':['Nombre', 'Calle','Numero','C.S.P.','Pais','Latitud','Longitud']

@@ -37,6 +37,8 @@ urlpatterns = [
     path('upload_file_places/', views.upload_file_places, name='upload_file_places'),
     path('success_places/', views.success_places, name='success_places'),
     path('clean_data_address/', views.clean_data_address, name='clean_data_address'),
+
+    path('download_records/', views.export_csv, name='download_records'),
 ]
 
 if settings.DEBUG:

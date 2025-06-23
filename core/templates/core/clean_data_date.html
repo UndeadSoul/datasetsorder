@@ -6,10 +6,17 @@
   <div class="bg-gray-200 p-4 rounded-lg mb-6">
     <h1 class="text-2xl font-bold text-gray-800 text-center">¡Fechas limpiadas y normalizadas!</h1>
   </div>
-
+  {% if dataflag %}
+  <div class="bg-gray-200 p-4 rounded-lg mb-6">
+    <h1 class="text-gray-800 text-center">Algunos registros fueron eliminados pues no cumplian con formato de fecha</h1>
+  </div>
+  {% endif %}
   <div class="w-full flex justify-end mb-6">
-    <a href="{% url 'home' %}" class="text-gray-700 font-medium hover:underline drop-shadow">
+    <a href="{% url 'home' %}" class="text-gray-700 font-medium hover:underline drop-shadow pl-2">
       Volver a inicio
+    </a>
+    <a href="{% url 'download_records' %}?data_type=dates" class="text-gray-700 font-medium hover:underline drop-shadow pl-2">
+      Descargar datos 
     </a>
   </div>
 
