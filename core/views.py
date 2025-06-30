@@ -1,4 +1,4 @@
-import unicodedata
+import unicodedata, chardet
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from datetime import datetime
@@ -17,13 +17,21 @@ def upload_file(request):
         if request.method == 'POST':
                 form = TextFileForm(request.POST, request.FILES)
                 if form.is_valid():
-                        #Antes de cargar el archivo con las ciudades, vamos a borrar los datos ya existentes
+                        #Antes de cargar el archivo con las ciudades, se borran los datos ya existentes
                         rawdatacity.objects.all().delete()
                         ciudades_norm.objects.all().delete()
-                        #Se procesa el archivo y se guarda linea por linea
+                        #Se lee el contenido bruto del archivo
                         file = form.cleaned_data['file']
-                        for line in file:
-                                rawdatacity.objects.create(rawcity_name=line.decode('utf-8').strip())
+                        raw_bytes = file.read()
+                        #se detecta la codificacion
+                        result = chardet.detect(raw_bytes)
+                        encoding = result['encoding'] or 'utf-8'
+                        print(f"codificacion detectada: {encoding}")
+                        #decodificar contenido
+                        text = raw_bytes.decode(encoding,errors='replace')
+                        #guardar linea por linea
+                        for line in text.splitlines():
+                               rawdatacity.objects.create(rawcity_name=line.strip())
                         return redirect("success")
         else:
                 form = TextFileForm()
@@ -82,10 +90,18 @@ def upload_file_date(request):
                         #Antes de cargar el archivo con las fechas, vamos a borrar los datos ya existentes
                         fnac_famosos.objects.all().delete()
                         fnac_famosos_norm.objects.all().delete()
-                        #Se procesa el archivo y se guarda linea por linea
+                        #Se lee el contenido bruto del archivo
                         file = form.cleaned_data['file']
-                        for line in file:
-                                fnac_famosos.objects.create(raw_fnac=line.decode('utf-8').strip())
+                        raw_bytes = file.read()
+                        #se detecta la codificacion
+                        result = chardet.detect(raw_bytes)
+                        encoding = result['encoding'] or 'utf-8'
+                        print(f"codificación detectada: {encoding}")
+                        #decodificar contenido
+                        text = raw_bytes.decode(encoding,errors='replace')
+                        #guardar linea por linea
+                        for line in text.splitlines():
+                                fnac_famosos.objects.create(raw_fnac=line.strip())
                         return redirect("success_date")
         else:
                 form = TextFileForm()
@@ -105,10 +121,20 @@ def clean_data_date(request):
         for line in range(len(rawdata)):
                 #quitar los numeros del inicio
                 data=rawdata[line].raw_fnac
+                substring_name=""
                 pos1=data.find(". ")    #encontrar los caracteres que van despues de los numeros
                 pos2=data.find(" - ")   #encontrar los caracteres que dividen el nombre de la fecha        
-                substring_name=data[pos1+2:pos2]
-                substring_date=data[pos2+3:]
+                if pos2==-1:
+                        pos2=data.find("\t")
+                        substring_date=data[pos2+1:]
+                else: 
+                        substring_date=data[pos2+3:]
+                if pos1>-1:
+                        substring_name=data[pos1+2:pos2]      
+                else:
+                        substring_name=data[:pos2]
+                
+                print(f"nombre: {substring_name} - fecha: {substring_date}")
                 #comparar con otros para saber si se repite
                 
                 if substring_name not in names:
@@ -120,24 +146,23 @@ def clean_data_date(request):
                         if substring_date.find("-")!=-1:
                                 #si es que la fecha tiene 4>= caracteres al inicio, va a ser el año
                                 if substring_date.find("-")>=3:
-                                        day=substring_date[-2:]
-                                        month=substring_date[-5:-3:]
-                                        year=substring_date[:-6]
-                                        str_year=day+"-"+month+"-"+year
-                                        #extraer dia mes y año actual
-                                        today = datetime.today()
-                                        this_year = today.year
-                                        #calcular edad y cumplaños
-                                        if "a.C." in year:
-                                                year=year.replace(" a.C.", "")
-                                                year=-int(year)
-                                        else:
-                                                year=int(year)
-                                        amount_of_years=this_year-year
-                                        if (today.month, today.day) < (int(month), int(day)):
-                                                amount_of_years -= 1
-                                        fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=str_year,fnac_age=amount_of_years)
-                                
+                                        year, month, day = substring_date.split("-")
+                                else:
+                                        day, month, year = substring_date.split("-")
+                                str_year=day+"-"+month+"-"+year
+                                #extraer dia mes y año actual
+                                today = datetime.today()
+                                this_year = today.year
+                                #calcular edad y cumplaños
+                                if "a.C." in year:
+                                        year=year.replace(" a.C.", "")
+                                        year=-int(year)
+                                else:
+                                        year=int(year)
+                                amount_of_years=this_year-year
+                                if (today.month, today.day) < (int(month), int(day)):
+                                        amount_of_years -= 1
+                                fnac_famosos_norm.objects.create(fnac_name=substring_name, fnac_date=str_year,fnac_age=amount_of_years)
                         else:
                                 #no guardar en base de datos
                                 dataflag=True
